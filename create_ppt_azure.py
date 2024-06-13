@@ -1,26 +1,22 @@
+import os
 import openai
 import pptx
 from pptx.util import Inches
 from dotenv import load_dotenv
-import os
-import subprocess
+from azure.identity import DefaultAzureCredential
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Set up Azure OpenAI credentials
+openai.api_type = "azure"
 openai.api_key = os.getenv('AZURE_OPENAI_API_KEY')
 openai.api_base = os.getenv('AZURE_OPENAI_ENDPOINT')
-openai.api_type = 'azure'
-openai.api_version = '2022-12-01'  # or the version you are using
-
-# Define the path to the PowerPoint template
-TEMPLATE_PATH = 'mytemp.pptx'
+openai.api_version = "2024-02-01"
+model = os.getenv('CHAT_COMPLETIONS_DEPLOYMENT_NAME')
 
 # Function to generate content using Azure OpenAI API
 def generate_content(prompt):
-    model = os.getenv('AZURE_OPENAI_MODEL')
-    print(f"Sending prompt to Azure OpenAI API: {prompt}")  # Debug information
     response = openai.ChatCompletion.create(
         engine=model,
         messages=[
@@ -28,9 +24,7 @@ def generate_content(prompt):
             {"role": "user", "content": prompt}
         ]
     )
-    content = response['choices'][0]['message']['content']
-    print(f"Received content from Azure OpenAI API: {content}")  # Debug information
-    return content
+    return response['choices'][0]['message']['content']
 
 # Function to parse the content into title and bullet points
 def parse_content(content):
@@ -78,6 +72,7 @@ def main():
         })
 
     # Create the PowerPoint presentation using the template
+    TEMPLATE_PATH = 'mytemp.pptx'  # Ensure your template path is correct
     create_ppt(slide_data, TEMPLATE_PATH)
 
     print("Presentation created successfully as 'presentation.pptx'")
@@ -85,7 +80,6 @@ def main():
     # Ask if the user wants to open the presentation
     open_presentation = input("Shall we open the presentation? (Yes/No): ")
     if open_presentation.lower() in ['yes', 'y']:
-        # Open the presentation
         if os.name == 'nt':  # For Windows
             os.startfile('presentation.pptx')
         else:  # For macOS/Linux
