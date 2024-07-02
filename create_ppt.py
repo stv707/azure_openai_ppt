@@ -84,7 +84,7 @@ def main():
         # Open the presentation
         if os.name == 'nt':  # For Windows
             os.startfile('presentation.pptx')
-        else:  # For macOS/Linux ( cibai linux not parsing!! BUG1 )
+        else:  # For macOS/Linux
             subprocess.call(['open', 'presentation.pptx'])
 
 if __name__ == "__main__":
